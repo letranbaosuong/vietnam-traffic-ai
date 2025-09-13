@@ -1,0 +1,24 @@
+# Vietnamese Traffic Signs Configuration
+# Cấu hình biển báo giao thông Việt Nam
+
+# Dataset info
+path: /Users/letranbaosuong/Documents/projects/utils/vietnam-traffic-ai/raspberry-pi-traffic-detection/../models
+train: train/images
+val: val/images
+test: test/images
+
+# Classes (29 classes)
+nc: 29
+names: ['cam_di_nguoc_chieu', 'cam_re_trai', 'cam_re_phai', 'cam_quay_dau', 'cam_dung_va_do', 'toc_do_toi_da_30', 'toc_do_toi_da_40', 'toc_do_toi_da_50', 'toc_do_toi_da_60', 'toc_do_toi_da_80', 'bien_stop', 'nhuong_duong', 'duong_uu_tien', 'duong_nguoi_di_bo', 'khu_vuc_truong_hoc', 'duong_xe_dap', 'dang_thi_cong', 'den_giao_thong', 're_trai', 're_phai', 'di_thang', 'bung_binh', 'duong_mot_chieu', 'cho_do_xe', 'benh_vien', 'cay_xang', 'nha_hang', 'khach_san', 'atm']
+
+# Model recommendations for Pi 4
+recommended_models:
+  - yolov8n.pt    # Fastest, ~6 FPS on Pi 4
+  - yolov8s.pt    # Balanced, ~4 FPS on Pi 4
+  - yolov5n.pt    # Alternative, good compatibility
+
+# Performance targets for Pi 4
+performance_targets:
+  fps_min: 5
+  accuracy_min: 85
+  memory_max: 1GB

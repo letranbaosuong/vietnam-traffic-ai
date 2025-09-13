@@ -1,0 +1,39 @@
+Vietnamese Traffic Sign Models Comparison Report
+==================================================
+
+Model: yolov8n.pt
+Video: sample.mp4
+FPS: 23.19
+Detections: 646
+Pi 4 Est: 13.92 FPS
+------------------------------
+Model: yolov8n.pt
+Video: car-driver.mp4
+FPS: 22.76
+Detections: 86
+Pi 4 Est: 13.66 FPS
+------------------------------
+Model: yolov8n.pt
+Video: mobycle-driver.mp4
+FPS: 24.02
+Detections: 30
+Pi 4 Est: 14.41 FPS
+------------------------------
+Model: yolov8s.pt
+Video: sample.mp4
+FPS: 13.54
+Detections: 953
+Pi 4 Est: 8.12 FPS
+------------------------------
+Model: yolov8s.pt
+Video: car-driver.mp4
+FPS: 13.62
+Detections: 102
+Pi 4 Est: 8.17 FPS
+------------------------------
+Model: yolov8s.pt
+Video: mobycle-driver.mp4
+FPS: 13.31
+Detections: 55
+Pi 4 Est: 7.98 FPS
+------------------------------

@@ -24,9 +24,9 @@ class TrafficDetector:
         self.confidence = confidence
         self.model = self._load_model()
 
-        # Traffic classes (COCO dataset)
+        # Traffic classes (COCO dataset) - Thêm person để dễ test
         self.traffic_classes = {
-            1: 'bicycle', 2: 'car', 3: 'motorcycle',
+            0: 'person', 1: 'bicycle', 2: 'car', 3: 'motorcycle',
             5: 'bus', 7: 'truck', 9: 'traffic light'
         }
 
@@ -200,8 +200,8 @@ def main():
     detector = TrafficDetector(model_type="yolov8n", confidence=0.5)
 
     # Test với webcam hoặc video file
-    video_source = 0  # Webcam
-    # video_source = "videos/traffic_sample.mp4"  # Video file
+    # video_source = 0  # Webcam
+    video_source = "video/sample.mp4"  # Video file
 
     if isinstance(video_source, str):
         detector.process_video(video_source, "outputs/detected_traffic.mp4")
