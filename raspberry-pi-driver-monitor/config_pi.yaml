@@ -1,0 +1,72 @@
+# Raspberry Pi Driver Monitor Configuration
+
+# Camera settings
+camera:
+  type: "pi"  # "pi" for Raspberry Pi Camera, "usb" for USB webcam
+  device_id: 0  # USB camera device ID (if using USB)
+  resolution: [640, 480]  # Lower resolution for better performance
+  fps: 20  # Target FPS
+  flip_horizontal: false
+  flip_vertical: false
+
+# Model settings
+model:
+  type: "haar"  # "haar" or "tflite"
+  tflite_model_path: null  # Path to TFLite model if using
+  confidence_threshold: 0.5
+  use_coral: false  # Enable if using Coral USB Accelerator
+
+# Detection settings
+detection:
+  # Drowsiness detection
+  drowsiness:
+    enabled: true
+    eye_closed_frames: 5  # Frames eyes must be closed
+    alert_threshold: 0.25
+
+  # Distraction detection
+  distraction:
+    enabled: true
+    yaw_threshold: 0.3  # Left/right threshold
+    pitch_threshold: 0.3  # Up/down threshold
+    distraction_frames: 10  # Consecutive frames for alert
+
+  # General settings
+  min_face_size: [30, 30]
+  detection_interval: 0.1  # Seconds between detections
+
+# Alert settings
+alerts:
+  audio_enabled: true
+  visual_enabled: true
+  console_output: true
+  log_to_file: true
+  log_path: "logs/driver_monitor.log"
+
+# Performance optimization
+performance:
+  num_threads: 4  # CPU threads for processing
+  skip_frames: 2  # Process every Nth frame
+  buffer_size: 10  # Frame buffer size
+
+# Display settings
+display:
+  show_video: true
+  window_name: "Pi Driver Monitor"
+  show_fps: true
+  show_debug_info: false
+
+# Recording settings
+recording:
+  enabled: false
+  output_path: "recordings/"
+  codec: "mp4v"
+  save_on_alert: true  # Auto-save when alert triggered
+  max_duration: 300  # Max recording duration in seconds
+
+# System settings
+system:
+  auto_start: false
+  run_as_service: false
+  restart_on_error: true
+  max_retries: 3

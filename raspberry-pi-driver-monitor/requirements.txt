@@ -1,0 +1,11 @@
+# Lightweight requirements for Raspberry Pi
+opencv-python-headless>=4.5.0
+numpy>=1.19.0
+tflite-runtime>=2.5.0  # Much lighter than full TensorFlow
+# mediapipe  # Optional - may be heavy for Pi
+picamera2>=0.3.0  # For Raspberry Pi camera
+pillow>=8.0.0
+imutils>=0.5.4
+
+# Optional for better performance
+# opencv-contrib-python-headless>=4.5.0  # If needed for extra features
