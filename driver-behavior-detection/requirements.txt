@@ -1,0 +1,12 @@
+opencv-python>=4.8.0
+mediapipe>=0.10.13
+numpy>=1.24.0
+scipy>=1.11.0
+# pygame>=2.5.0  # Optional: for better audio support
+# pyttsx3>=2.90  # Optional: for text-to-speech
+# ultralytics>=8.0.0  # Optional: for YOLO detection
+pillow>=10.0.0
+matplotlib>=3.8.0
+# pandas>=2.0.0  # Optional: for data analysis
+# streamlit>=1.29.0  # Optional: for web interface
+imutils>=0.5.4
