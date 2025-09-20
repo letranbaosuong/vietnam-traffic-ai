@@ -72,25 +72,70 @@ class DriverBehaviorMonitor:
         return combined
 
     def draw_alert_overlay(self, frame, alert_message, alert_type):
+        """Draw alert overlay with improved visual design"""
         if alert_message:
             h, w = frame.shape[:2]
-            overlay = frame.copy()
 
+            # Get alert color based on type
             color = self.alert_system.get_alert_color(alert_type)
-            cv2.rectangle(overlay, (0, 0), (w, 100), color, -1)
 
-            frame = cv2.addWeighted(frame, 0.7, overlay, 0.3, 0)
+            # Create gradient overlay for smoother appearance
+            overlay = frame.copy()
+            alert_height = 100
 
-            text_size = cv2.getTextSize(alert_message,
-                                       cv2.FONT_HERSHEY_SIMPLEX, 0.8, 2)[0]
-            text_x = (w - text_size[0]) // 2
-            text_y = 60
+            # Create gradient effect (darker at top, lighter at bottom)
+            for i in range(alert_height):
+                alpha = 1.0 - (i / alert_height) * 0.5  # Gradient from 1.0 to 0.5
+                overlay_color = tuple(int(c * alpha) for c in color)
+                cv2.line(overlay, (0, i), (w, i), overlay_color, 1)
 
+            # Blend overlay with frame
+            alpha = 0.4  # Overall transparency
+            cv2.addWeighted(overlay[:alert_height], alpha,
+                          frame[:alert_height], 1 - alpha, 0,
+                          frame[:alert_height])
+
+            # Calculate text metrics
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            font_scale = 0.9
+            thickness = 2
+
+            # Get text size for centering
+            (text_width, text_height), baseline = cv2.getTextSize(
+                alert_message, font, font_scale, thickness)
+
+            # Center text position
+            text_x = (w - text_width) // 2
+            text_y = (alert_height + text_height) // 2
+
+            # Draw text with outline for better readability
+            # Black outline
+            for dx in [-2, -1, 0, 1, 2]:
+                for dy in [-2, -1, 0, 1, 2]:
+                    if dx != 0 or dy != 0:
+                        cv2.putText(frame, alert_message,
+                                  (text_x + dx, text_y + dy),
+                                  font, font_scale, (0, 0, 0), thickness + 1)
+
+            # White main text
             cv2.putText(frame, alert_message,
-                       (text_x, text_y), cv2.FONT_HERSHEY_SIMPLEX,
-                       0.8, (255, 255, 255), 2)
+                       (text_x, text_y), font, font_scale,
+                       (255, 255, 255), thickness)
 
-            cv2.rectangle(frame, (0, 0), (w, 100), color, 3)
+            # Draw animated border (pulsing effect based on time)
+            import time
+            pulse = abs(np.sin(time.time() * 3)) * 0.5 + 0.5
+            border_color = tuple(int(c * pulse) for c in color)
+            cv2.rectangle(frame, (0, 0), (w - 1, alert_height), border_color, 3)
+
+            # Add side indicators for critical alerts
+            if alert_type in ['drowsiness', 'distraction', 'phone']:
+                indicator_width = 10
+                for i in range(0, alert_height, 20):
+                    cv2.rectangle(frame, (0, i), (indicator_width, i + 10),
+                                (255, 255, 255), -1)
+                    cv2.rectangle(frame, (w - indicator_width, i),
+                                (w, i + 10), (255, 255, 255), -1)
 
         return frame
 
