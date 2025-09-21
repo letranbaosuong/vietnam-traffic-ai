@@ -1,0 +1,27 @@
+model:
+  name: "yolov8n"
+  input_size: [320, 320]
+  confidence_threshold: 0.4
+  nms_threshold: 0.45
+  device: "cpu"
+
+video:
+  input_path: "data/videos/input.mp4"
+  output_path: "data/outputs/output.mp4"
+  fps: 15
+  codec: "mp4v"
+
+rpi_optimization:
+  num_threads: 4
+  enable_quantization: true
+  use_onnx: true
+
+traffic_classes:
+  - person
+  - bicycle
+  - car
+  - motorcycle
+  - bus
+  - truck
+  - traffic light
+  - stop sign

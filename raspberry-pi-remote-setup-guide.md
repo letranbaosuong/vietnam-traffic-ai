@@ -291,3 +291,14 @@ sed -i '' '9d' ~/.ssh/known_hosts
 ssh-keygen -R raspberrypi.local
 ssh-keyscan -H raspberrypi.local >> ~/.ssh/known_hosts
 ssh admin@raspberrypi.local
+sudo raspi-config
+
+![System option](image.png)
+![Boot](image-1.png)
+![Desktop Desktop GUI](image-2.png)
+![System option](image.png)
+![Auto Login](image-6.png)
+![Auto Login - Yes](image-7.png)
+![Interface Option](image-3.png)
+![VNC](image-4.png)
+![Enable VNC - Yes](image-5.png)
