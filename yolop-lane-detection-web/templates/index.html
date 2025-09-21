@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YOLOP Lane Detection - Vietnam Traffic Safety</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 1.8rem;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            flex: 1;
+        }
+
+        .upload-section {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f0f0;
+        }
+
+        .upload-area.dragover {
+            background: #e8e8ff;
+            border-color: #4c51bf;
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-hint {
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .processing-status {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .status-message {
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+        }
+
+        .status-processing {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .results-section {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: none;
+            margin-top: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .video-preview {
+            width: 100%;
+            max-width: 800px;
+            margin: 2rem auto;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .feature-description {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .warning-banner {
+            background: #ff6b6b;
+            color: white;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div>
+                <h1>🚗 YOLOP Lane Detection System</h1>
+                <div class="subtitle">Hệ thống phát hiện làn đường và cảnh báo an toàn giao thông</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Upload Section -->
+        <div class="upload-section">
+            <h2>📹 Tải Video Lên</h2>
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">Kéo thả video vào đây hoặc click để chọn file</div>
+                <div class="upload-hint">Hỗ trợ: MP4, AVI, MOV, MKV (Max: 100MB)</div>
+                <input type="file" id="fileInput" accept="video/*">
+            </div>
+            <div id="fileInfo" style="margin-top: 1rem; display: none;">
+                <p>📄 File đã chọn: <span id="fileName"></span></p>
+                <p>📊 Kích thước: <span id="fileSize"></span></p>
+                <button class="btn btn-primary" onclick="uploadVideo()">🚀 Bắt Đầu Phân Tích</button>
+                <button class="btn btn-secondary" onclick="resetUpload()">🔄 Chọn File Khác</button>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">🛣️</div>
+                <div class="feature-title">Phát Hiện Làn Đường</div>
+                <div class="feature-description">Xác định chính xác vị trí làn đường và đường cong</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🚙</div>
+                <div class="feature-title">Nhận Diện Phương Tiện</div>
+                <div class="feature-description">Phát hiện xe ô tô, xe máy và các phương tiện khác</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚠️</div>
+                <div class="feature-title">Cảnh Báo Lệch Làn</div>
+                <div class="feature-description">Cảnh báo khi xe di chuyển không đúng làn đường</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">✅</div>
+                <div class="feature-title">Vùng Lái An Toàn</div>
+                <div class="feature-description">Tô màu và xác định khu vực an toàn để lái xe</div>
+            </div>
+        </div>
+
+        <!-- Processing Status -->
+        <div class="processing-status" id="processingStatus">
+            <h2>⚙️ Đang Xử Lý Video</h2>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%">0%</div>
+            </div>
+            <div id="statusMessage" class="status-message status-processing">
+                Đang khởi tạo...
+            </div>
+            <div class="loading-spinner" id="loadingSpinner"></div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section" id="resultsSection">
+            <h2>📊 Kết Quả Phân Tích</h2>
+
+            <div class="warning-banner" id="warningBanner">
+                ⚠️ Phát hiện nhiều tình huống nguy hiểm trong video!
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="statFrames">0</div>
+                    <div class="stat-label">Tổng Số Frame</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statVehicles">0</div>
+                    <div class="stat-label">Phương Tiện Phát Hiện</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statDepartures">0</div>
+                    <div class="stat-label">Lần Lệch Làn</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statDangerous">0</div>
+                    <div class="stat-label">Tình Huống Nguy Hiểm</div>
+                </div>
+            </div>
+
+            <div class="video-preview" id="videoPreview">
+                <video id="resultVideo" controls></video>
+            </div>
+
+            <div style="text-align: center; margin-top: 2rem;">
+                <button class="btn btn-success" id="downloadBtn">💾 Tải Video Đã Xử Lý</button>
+                <button class="btn btn-primary" onclick="resetAll()">📹 Phân Tích Video Khác</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+        let currentJobId = null;
+        let statusCheckInterval = null;
+
+        // Setup drag and drop
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        function handleFileSelect(file) {
+            const maxSize = 100 * 1024 * 1024; // 100MB
+
+            if (!file.type.startsWith('video/')) {
+                alert('Vui lòng chọn file video!');
+                return;
+            }
+
+            if (file.size > maxSize) {
+                alert('File quá lớn! Vui lòng chọn file nhỏ hơn 100MB');
+                return;
+            }
+
+            selectedFile = file;
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = formatFileSize(file.size);
+            document.getElementById('fileInfo').style.display = 'block';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        async function uploadVideo() {
+            if (!selectedFile) {
+                alert('Vui lòng chọn video!');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('video', selectedFile);
+
+            // Show processing status
+            document.getElementById('processingStatus').style.display = 'block';
+            document.getElementById('resultsSection').style.display = 'none';
+            document.getElementById('statusMessage').textContent = 'Đang tải video lên server...';
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    currentJobId = data.job_id;
+                    startStatusChecking();
+                } else {
+                    alert('Lỗi: ' + data.error);
+                    resetProcessing();
+                }
+            } catch (error) {
+                alert('Lỗi kết nối: ' + error.message);
+                resetProcessing();
+            }
+        }
+
+        function startStatusChecking() {
+            statusCheckInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/status/${currentJobId}`);
+                    const status = await response.json();
+
+                    updateProcessingStatus(status);
+
+                    if (status.status === 'completed') {
+                        clearInterval(statusCheckInterval);
+                        showResults(status);
+                    } else if (status.status === 'failed') {
+                        clearInterval(statusCheckInterval);
+                        alert('Xử lý thất bại: ' + status.error);
+                        resetProcessing();
+                    }
+                } catch (error) {
+                    console.error('Error checking status:', error);
+                }
+            }, 1000);
+        }
+
+        function updateProcessingStatus(status) {
+            const progress = status.progress || 0;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressFill').textContent = progress + '%';
+
+            let message = 'Đang xử lý...';
+            if (progress < 30) {
+                message = 'Đang phân tích làn đường...';
+            } else if (progress < 60) {
+                message = 'Đang phát hiện phương tiện...';
+            } else if (progress < 90) {
+                message = 'Đang kiểm tra an toàn...';
+            } else {
+                message = 'Hoàn tất xử lý...';
+            }
+
+            document.getElementById('statusMessage').textContent = message;
+        }
+
+        function showResults(status) {
+            document.getElementById('processingStatus').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'block';
+
+            const stats = status.stats || {};
+
+            document.getElementById('statFrames').textContent = stats.total_frames || 0;
+            document.getElementById('statVehicles').textContent =
+                stats.vehicles_detected ? stats.vehicles_detected.length : 0;
+            document.getElementById('statDepartures').textContent = stats.lane_departures || 0;
+            document.getElementById('statDangerous').textContent =
+                stats.dangerous_situations ? stats.dangerous_situations.length : 0;
+
+            // Show warning if needed
+            if (stats.dangerous_situations && stats.dangerous_situations.length > 5) {
+                document.getElementById('warningBanner').style.display = 'block';
+            }
+
+            // Set video source
+            document.getElementById('resultVideo').src = `/download/${currentJobId}`;
+
+            // Setup download button
+            document.getElementById('downloadBtn').onclick = () => {
+                window.open(`/download/${currentJobId}`, '_blank');
+            };
+        }
+
+        function resetUpload() {
+            selectedFile = null;
+            fileInput.value = '';
+            document.getElementById('fileInfo').style.display = 'none';
+        }
+
+        function resetProcessing() {
+            document.getElementById('processingStatus').style.display = 'none';
+            document.getElementById('progressFill').style.width = '0%';
+            document.getElementById('progressFill').textContent = '0%';
+            if (statusCheckInterval) {
+                clearInterval(statusCheckInterval);
+            }
+        }
+
+        function resetAll() {
+            resetUpload();
+            resetProcessing();
+            document.getElementById('resultsSection').style.display = 'none';
+            document.getElementById('warningBanner').style.display = 'none';
+            currentJobId = null;
+        }
+    </script>
+</body>
+</html>
