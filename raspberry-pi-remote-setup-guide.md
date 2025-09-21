@@ -285,3 +285,9 @@ sshfs pi@192.168.1.170:/home/pi ~/pi_mount
 - TeamViewer: https://www.teamviewer.com/en/download/raspberry-pi/
 - RealVNC: https://www.realvnc.com/en/connect/download/viewer/
 - Raspberry Pi Documentation: https://www.raspberrypi.org/documentation/
+
+## Xoa ssh admin@raspberrypi.local khi da cai moi
+sed -i '' '9d' ~/.ssh/known_hosts
+ssh-keygen -R raspberrypi.local
+ssh-keyscan -H raspberrypi.local >> ~/.ssh/known_hosts
+ssh admin@raspberrypi.local
