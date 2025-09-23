@@ -1,0 +1,38 @@
+# Core dependencies
+numpy==1.24.3
+opencv-python==4.8.1.78
+pillow==10.1.0
+
+# Deep Learning Frameworks (choose one based on your preference)
+tensorflow==2.13.0  # For TensorFlow Lite
+# onnxruntime==1.16.0  # Alternative: ONNX Runtime
+
+# For Raspberry Pi optimization
+tflite-runtime==2.13.0  # Lighter than full TensorFlow
+
+# Computer Vision
+mediapipe==0.10.7  # For face mesh and landmarks
+dlib==19.24.2  # For face detection (optional)
+
+# Utilities
+scipy==1.11.3
+scikit-learn==1.3.1
+matplotlib==3.7.2
+pandas==2.1.2
+
+# Alert System
+RPi.GPIO==0.7.1  # For Raspberry Pi GPIO control
+pygame==2.5.2  # For audio alerts
+
+# Real-time processing
+imutils==0.5.4
+threading  # Built-in
+
+# Data collection and annotation
+labelImg==1.8.6  # For manual annotation
+albumentations==1.3.1  # For data augmentation
+
+# Model optimization
+tensorflowjs==4.13.0  # For web deployment (optional)
+onnx==1.15.0  # For model conversion
+tf2onnx==1.15.1  # TF to ONNX conversion

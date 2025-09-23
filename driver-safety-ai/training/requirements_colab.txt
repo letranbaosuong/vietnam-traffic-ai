@@ -1,0 +1,10 @@
+# Requirements for Google Colab training
+tensorflow-cpu==2.15.0  # Use older TensorFlow version compatible with protobuf 4.x
+protobuf>=4.25.3,<5
+opencv-python
+pillow
+matplotlib
+pandas
+scikit-learn
+albumentations
+numpy<2.0  # Keep numpy compatible

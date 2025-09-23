@@ -1,0 +1,132 @@
+# Driver Safety AI Configuration
+
+# Model settings
+model:
+  path: "models/model_int8.tflite"  # Path to TFLite model
+  input_size: [224, 224]             # Model input dimensions
+  num_classes: 9                     # Number of behavior classes
+
+# Camera settings
+camera:
+  type: "picamera"          # Options: picamera, usb
+  device: 0                 # USB camera device index
+  resolution: [640, 480]    # Camera resolution
+  fps: 30                   # Target FPS
+  flip_horizontal: false    # Mirror image
+  flip_vertical: false      # Flip image
+
+# Detection settings
+detection:
+  confidence_threshold: 0.7     # Minimum confidence for valid detection
+  danger_duration: 3.0          # Seconds of dangerous behavior before alert
+  smoothing_window: 5           # Number of frames for smoothing predictions
+  min_face_size: 60            # Minimum face size in pixels
+
+# Behavior classes
+behaviors:
+  - normal
+  - drowsy
+  - yawning
+  - phone_call
+  - texting
+  - distracted
+  - drinking
+  - reaching_behind
+  - no_seatbelt
+
+# Alert settings
+alerts:
+  enable_gpio: true           # Enable GPIO alerts (LEDs, buzzer)
+  enable_sound: true          # Enable audio alerts
+  enable_logging: true        # Log alerts to file
+  alert_cooldown: 10         # Seconds between repeated alerts
+
+  # GPIO pins (BCM numbering)
+  gpio:
+    led_green: 17
+    led_yellow: 27
+    led_red: 22
+    buzzer: 23
+
+  # Sound settings
+  sound:
+    volume: 0.7
+    alert_sound: "assets/alert.wav"
+    warning_sound: "assets/warning.wav"
+
+# Recording settings
+recording:
+  enable: false                    # Enable video recording
+  output_dir: "recordings"         # Directory for recordings
+  segment_duration: 300            # Segment duration in seconds (5 min)
+  save_on_alert_only: true        # Only save when alert triggered
+  pre_alert_buffer: 10            # Seconds to save before alert
+  post_alert_buffer: 10           # Seconds to save after alert
+
+# Performance settings
+performance:
+  num_threads: 4               # Number of CPU threads for inference
+  use_gpu: false              # Use GPU acceleration if available
+  use_tpu: false              # Use Edge TPU if available
+  batch_size: 1               # Batch size for inference
+
+# Logging settings
+logging:
+  level: "INFO"              # Log level: DEBUG, INFO, WARNING, ERROR
+  file: "logs/driver_monitor.log"
+  max_file_size: 10485760    # 10MB
+  backup_count: 5            # Number of backup log files
+
+  # What to log
+  log_detections: true       # Log all detections
+  log_alerts: true          # Log alerts
+  log_statistics: true      # Log periodic statistics
+  statistics_interval: 60   # Seconds between statistics logs
+
+# Web API settings (optional)
+api:
+  enable: false             # Enable REST API
+  host: "0.0.0.0"
+  port: 5000
+  cors_origins: ["*"]       # Allowed CORS origins
+
+  # Authentication
+  auth:
+    enable: false
+    username: "admin"
+    password: "change_me"
+
+# Cloud sync (optional)
+cloud:
+  enable: false
+  provider: "firebase"      # Options: firebase, aws, azure
+
+  # Firebase settings
+  firebase:
+    project_id: "your-project-id"
+    credentials_file: "firebase-credentials.json"
+
+  # Data to sync
+  sync_alerts: true
+  sync_statistics: true
+  sync_recordings: false
+  sync_interval: 300        # Seconds between syncs
+
+# System monitoring
+monitoring:
+  enable: true
+  check_interval: 60        # Seconds between system checks
+
+  # Thresholds for warnings
+  cpu_temp_warning: 70      # Celsius
+  cpu_temp_critical: 80     # Celsius
+  memory_warning: 80        # Percentage
+  disk_warning: 90          # Percentage
+
+# Development/Debug settings
+debug:
+  enable: false
+  show_preview: true        # Show camera preview
+  save_debug_frames: false  # Save frames for debugging
+  profile_inference: false  # Profile model inference time
+  test_mode: false         # Use test video instead of camera
