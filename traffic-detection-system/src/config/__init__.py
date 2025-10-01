@@ -1,0 +1,1 @@
+"""Configuration management for the traffic detection system."""

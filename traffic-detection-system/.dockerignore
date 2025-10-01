@@ -1,0 +1,62 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# Project specific
+data/videos/*
+data/images/*
+data/cache/*
+data/uploads/*
+logs/
+benchmark_results/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+docs/_build/
+*.md
+!README.md
+
+# Tests
+tests/
+pytest.ini
+.coveragerc
+
+# Development
+.env.local
+.env.development
+.env.test
+notebooks/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore

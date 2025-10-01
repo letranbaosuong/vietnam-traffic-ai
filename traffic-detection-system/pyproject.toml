@@ -1,0 +1,76 @@
+[tool.poetry]
+name = "traffic-detection-system"
+version = "1.0.0"
+description = "Object and gesture detection system for traffic scenarios optimized for Raspberry Pi 4 and macOS"
+authors = ["Traffic Detection Team"]
+readme = "README.md"
+python = "^3.9"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+fastapi = "^0.104.1"
+uvicorn = {extras = ["standard"], version = "^0.24.0"}
+opencv-python = "^4.8.1.78"
+ultralytics = "^8.0.200"
+numpy = "^1.24.3"
+pillow = "^10.1.0"
+pydantic = "^2.5.0"
+pydantic-settings = "^2.1.0"
+python-multipart = "^0.0.6"
+aiofiles = "^23.2.1"
+psutil = "^5.9.6"
+torch = "^2.1.0"
+torchvision = "^0.16.0"
+mediapipe = "^0.10.8"
+redis = "^5.0.1"
+prometheus-client = "^0.19.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.3"
+pytest-asyncio = "^0.21.1"
+pytest-cov = "^4.1.0"
+pytest-mock = "^3.12.0"
+black = "^23.11.0"
+isort = "^5.12.0"
+flake8 = "^6.1.0"
+mypy = "^1.7.0"
+pre-commit = "^3.5.0"
+httpx = "^0.25.1"
+
+[tool.poetry.group.rpi]
+optional = true
+
+[tool.poetry.group.rpi.dependencies]
+picamera2 = {version = "^0.3.16", platform = "linux"}
+RPi.GPIO = {version = "^0.7.1", platform = "linux"}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+target-version = ["py39"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_any_unimported = false
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+check_untyped_defs = true
+strict_optional = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+addopts = "-v --cov=src --cov-report=term-missing --cov-report=html"
+asyncio_mode = "auto"
