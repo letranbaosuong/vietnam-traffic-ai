@@ -1,0 +1,5 @@
+argparse
+numpy>=1.20.0 # To ensure compatibility with OpenCV on Raspberry Pi.
+opencv-python
+pandas>=1.3.1
+tensorflow
