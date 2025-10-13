@@ -7,7 +7,10 @@ with open('coco_labels.txt', 'r') as f:
     labels = [line.strip() for line in f.readlines()]
 
 print('Loading image...')
-image = cv2.imread('test_data/table.jpg')
+image = cv2.imread('traffic_test.jpg')
+if image is None:
+    print('ERROR: Cannot load image traffic_test.jpg')
+    exit(1)
 orig_image = image.copy()
 print(f'Image shape: {image.shape}')
 
@@ -98,8 +101,11 @@ for i in range(len(scores)):
 print(f'\nTotal detections: {detections}')
 
 # Save result
-output_path = 'detection_result.jpg'
+output_path = 'traffic_detection_result.jpg'
 cv2.imwrite(output_path, orig_image)
 print(f'Result saved to: {output_path}')
 
 print('\n✅ Test completed successfully!')
+print(f'\n📊 Summary for traffic image:')
+print(f'  - Detections above threshold: {detections}')
+print(f'  - Threshold used: {threshold}')
