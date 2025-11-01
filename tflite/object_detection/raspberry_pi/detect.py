@@ -22,10 +22,13 @@ from tflite_support.task import processor
 from tflite_support.task import vision
 import utils
 from lane_detector import LaneDetector
+from driver_gesture_detector import DriverGestureDetector
+from gesture_warning_system import GestureWarningSystem
 
 
 def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
-        enable_edgetpu: bool, enable_lane_detection: bool = True) -> None:
+        enable_edgetpu: bool, enable_lane_detection: bool = True,
+        enable_gesture_detection: bool = False) -> None:
   """Continuously run inference on images acquired from the camera.
 
   Args:
@@ -36,6 +39,7 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
     num_threads: The number of CPU threads to run the model.
     enable_edgetpu: True/False whether the model is a EdgeTPU model.
     enable_lane_detection: True/False whether to enable lane detection.
+    enable_gesture_detection: True/False whether to enable driver gesture detection.
   """
 
   # Variables to calculate FPS
@@ -69,6 +73,13 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
   if enable_lane_detection:
     lane_detector = LaneDetector(img_height=height, img_width=width)
 
+  # Initialize gesture detector and warning system if enabled
+  gesture_detector = None
+  warning_system = None
+  if enable_gesture_detection:
+    gesture_detector = DriverGestureDetector()
+    warning_system = GestureWarningSystem()
+
   # Continuously capture images from the camera and run inference
   while cap.isOpened():
     success, image = cap.read()
@@ -96,6 +107,28 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
     if lane_detector is not None:
       lane_result = lane_detector.detect(image)
       image = lane_detector.visualize(image, lane_result, show_roi=False)
+
+    # Run gesture detection if enabled
+    if gesture_detector is not None and warning_system is not None:
+      warnings, image = gesture_detector.detect(image)
+
+      # Clear old warnings
+      warning_system.clear_old_warnings(max_age=2.0)
+
+      # Add new warnings
+      for warning in warnings:
+        # Extract category from warning text
+        if "điện thoại" in warning.lower():
+          warning_system.add_warning(warning, 'phone_usage')
+        elif "tập trung" in warning.lower():
+          warning_system.add_warning(warning, 'distraction')
+        elif "vô lăng" in warning.lower():
+          warning_system.add_warning(warning, 'hands_off_wheel')
+        else:
+          warning_system.add_warning(warning, 'unknown')
+
+      # Visualize warnings
+      image = warning_system.draw_warnings(image, warnings)
 
     # Calculate the FPS
     if counter % fps_avg_frame_count == 0:
@@ -158,10 +191,17 @@ def main():
       action='store_true',
       required=False,
       default=True)
+  parser.add_argument(
+      '--enableGestureDetection',
+      help='Whether to enable driver gesture detection.',
+      action='store_true',
+      required=False,
+      default=False)
   args = parser.parse_args()
 
   run(args.model, int(args.cameraId), args.frameWidth, args.frameHeight,
-      int(args.numThreads), bool(args.enableEdgeTPU), bool(args.enableLaneDetection))
+      int(args.numThreads), bool(args.enableEdgeTPU), bool(args.enableLaneDetection),
+      bool(args.enableGestureDetection))
 
 
 if __name__ == '__main__':
