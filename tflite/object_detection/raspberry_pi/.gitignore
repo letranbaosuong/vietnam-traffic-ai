@@ -1,0 +1,9 @@
+
+# Lane detection output videos
+*_output.mp4
+lane_detection_output.mp4
+
+# Virtual environment
+venv/
+*.pyc
+__pycache__/

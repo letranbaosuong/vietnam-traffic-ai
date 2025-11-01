@@ -1,60 +1,133 @@
+#!/usr/bin/env python3
+"""
+Quick test script - Processes first 100 frames of video to verify lane detection
+"""
+
 import cv2
-import numpy as np
-import tensorflow as tf
+import sys
+import time
+from pathlib import Path
 
-print('Loading image...')
-image = cv2.imread('test_data/table.jpg')
-print(f'Image shape: {image.shape}')
+# Add current directory to path
+sys.path.insert(0, str(Path(__file__).parent))
 
-print('Loading model...')
-interpreter = tf.lite.Interpreter(model_path='efficientdet_lite0.tflite')
-interpreter.allocate_tensors()
+from lane_detector import LaneDetector
 
-input_details = interpreter.get_input_details()
-output_details = interpreter.get_output_details()
 
-print(f'Input shape: {input_details[0]["shape"]}')
-print(f'Model loaded successfully!')
+def quick_test(video_path, max_frames=100):
+    """Quick test on first N frames of video"""
 
-# Prepare input
-input_shape = input_details[0]['shape']
-height, width = input_shape[1], input_shape[2]
+    print(f"Quick Test: {video_path}")
+    print(f"Processing first {max_frames} frames...")
+    print("-" * 60)
 
-image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-image_resized = cv2.resize(image_rgb, (width, height))
-# Normalize to [0, 1]
-input_data = np.expand_dims(image_resized, axis=0).astype(np.float32) / 255.0
+    # Open video
+    cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        print(f"ERROR: Cannot open video: {video_path}")
+        return False
 
-print(f'Number of outputs: {len(output_details)}')
-for i, detail in enumerate(output_details):
-    print(f'Output {i}: {detail["name"]}, shape: {detail["shape"]}, dtype: {detail["dtype"]}')
+    # Get video info
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-print('\nRunning inference...')
-interpreter.set_tensor(input_details[0]['index'], input_data)
-interpreter.invoke()
+    print(f"Video: {width}x{height} @ {fps:.1f} FPS")
+    print(f"Total frames: {total_frames}")
+    print("-" * 60)
 
-# Get output - format is [scores, boxes]
-# scores shape: [1, num_boxes, num_classes]
-# boxes shape: [1, num_boxes, 4]
-all_scores = interpreter.get_tensor(output_details[0]['index'])[0]  # [num_boxes, num_classes]
-boxes = interpreter.get_tensor(output_details[1]['index'])[0]  # [num_boxes, 4]
+    # Initialize detector
+    detector = LaneDetector(img_height=height, img_width=width)
 
-# Get the best class for each box
-scores = np.max(all_scores, axis=1)  # Max score across all classes
-classes = np.argmax(all_scores, axis=1)  # Class with max score
+    # Statistics
+    frames_processed = 0
+    lanes_detected = 0
+    left_detected = 0
+    right_detected = 0
+    both_detected = 0
 
-print(f'Detection complete!')
-print(f'Max score: {np.max(scores):.6f}')
-print(f'Top 10 scores: {sorted(scores, reverse=True)[:10]}')
+    start_time = time.time()
 
-threshold = 0.01  # Lower threshold for testing
-detections = sum(1 for score in scores if score > threshold)
-print(f'\nFound {detections} objects with confidence > {threshold}')
+    # Process frames
+    while frames_processed < max_frames:
+        ret, frame = cap.read()
+        if not ret:
+            break
 
-# Show top detections
-top_indices = np.argsort(scores)[::-1][:10]  # Top 10
-for idx in top_indices:
-    if scores[idx] > threshold:
-        print(f'  Object: Class {int(classes[idx])}, Score: {scores[idx]:.6f}')
+        frames_processed += 1
 
-print('SUCCESS!')
+        # Detect lanes
+        result = detector.detect(frame)
+
+        # Count detections
+        has_left = result['left_lane'] is not None
+        has_right = result['right_lane'] is not None
+
+        if has_left or has_right:
+            lanes_detected += 1
+        if has_left:
+            left_detected += 1
+        if has_right:
+            right_detected += 1
+        if has_left and has_right:
+            both_detected += 1
+
+        # Show progress
+        if frames_processed % 10 == 0:
+            print(f"Processed: {frames_processed}/{max_frames} frames", end='\r')
+
+    elapsed = time.time() - start_time
+    avg_fps = frames_processed / elapsed if elapsed > 0 else 0
+
+    # Print results
+    print()
+    print("-" * 60)
+    print("Results:")
+    print(f"  Frames processed: {frames_processed}")
+    print(f"  Processing time: {elapsed:.2f}s")
+    print(f"  Average FPS: {avg_fps:.2f}")
+    print()
+    print(f"  Frames with lanes: {lanes_detected} ({100*lanes_detected/frames_processed:.1f}%)")
+    print(f"  Left lane detected: {left_detected} ({100*left_detected/frames_processed:.1f}%)")
+    print(f"  Right lane detected: {right_detected} ({100*right_detected/frames_processed:.1f}%)")
+    print(f"  Both lanes detected: {both_detected} ({100*both_detected/frames_processed:.1f}%)")
+    print("-" * 60)
+
+    # Cleanup
+    cap.release()
+
+    return True
+
+
+def main():
+    # Test videos
+    test_videos = [
+        "test_videos/solidWhiteRight.mp4",
+        "test_videos/detect_video_danang.mp4"
+    ]
+
+    print("=" * 60)
+    print("Lane Detection Quick Test")
+    print("=" * 60)
+    print()
+
+    for video_path in test_videos:
+        if Path(video_path).exists():
+            quick_test(video_path, max_frames=100)
+            print()
+        else:
+            print(f"SKIP: {video_path} not found")
+            print()
+
+    print("=" * 60)
+    print("Quick test completed!")
+    print("=" * 60)
+    print()
+    print("To view full video processing:")
+    print("  python3 test_lane_detection.py --mode video --source test_videos/solidWhiteRight.mp4")
+    print()
+
+
+if __name__ == '__main__':
+    main()

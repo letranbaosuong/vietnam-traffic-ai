@@ -21,10 +21,11 @@ from tflite_support.task import core
 from tflite_support.task import processor
 from tflite_support.task import vision
 import utils
+from lane_detector import LaneDetector
 
 
 def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
-        enable_edgetpu: bool) -> None:
+        enable_edgetpu: bool, enable_lane_detection: bool = True) -> None:
   """Continuously run inference on images acquired from the camera.
 
   Args:
@@ -34,6 +35,7 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
     height: The height of the frame captured from the camera.
     num_threads: The number of CPU threads to run the model.
     enable_edgetpu: True/False whether the model is a EdgeTPU model.
+    enable_lane_detection: True/False whether to enable lane detection.
   """
 
   # Variables to calculate FPS
@@ -62,6 +64,11 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
       base_options=base_options, detection_options=detection_options)
   detector = vision.ObjectDetector.create_from_options(options)
 
+  # Initialize lane detector if enabled
+  lane_detector = None
+  if enable_lane_detection:
+    lane_detector = LaneDetector(img_height=height, img_width=width)
+
   # Continuously capture images from the camera and run inference
   while cap.isOpened():
     success, image = cap.read()
@@ -84,6 +91,11 @@ def run(model: str, camera_id: int, width: int, height: int, num_threads: int,
 
     # Draw keypoints and edges on input image
     image = utils.visualize(image, detection_result)
+
+    # Run lane detection if enabled
+    if lane_detector is not None:
+      lane_result = lane_detector.detect(image)
+      image = lane_detector.visualize(image, lane_result, show_roi=False)
 
     # Calculate the FPS
     if counter % fps_avg_frame_count == 0:
@@ -140,10 +152,16 @@ def main():
       action='store_true',
       required=False,
       default=False)
+  parser.add_argument(
+      '--enableLaneDetection',
+      help='Whether to enable lane detection.',
+      action='store_true',
+      required=False,
+      default=True)
   args = parser.parse_args()
 
   run(args.model, int(args.cameraId), args.frameWidth, args.frameHeight,
-      int(args.numThreads), bool(args.enableEdgeTPU))
+      int(args.numThreads), bool(args.enableEdgeTPU), bool(args.enableLaneDetection))
 
 
 if __name__ == '__main__':
