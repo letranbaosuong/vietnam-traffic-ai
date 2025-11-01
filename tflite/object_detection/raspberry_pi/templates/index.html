@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚗 Traffic Detection System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 60px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9ff;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #4CAF50;
+            background: #e8f5e9;
+        }
+
+        .upload-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .upload-subtext {
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .detection-options {
+            margin-top: 30px;
+        }
+
+        .option-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .option-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .option-btn {
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            background: white;
+        }
+
+        .option-btn:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .option-btn.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .option-btn .icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .option-btn .title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .option-btn .desc {
+            font-size: 0.85em;
+            opacity: 0.8;
+        }
+
+        .process-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: transform 0.2s ease;
+        }
+
+        .process-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        .process-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .progress-container {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+            animation: progress-animation 1.5s ease-in-out infinite;
+        }
+
+        @keyframes progress-animation {
+            0% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 15px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .result-container {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .result-video {
+            width: 100%;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .result-stats {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .stat-value {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .action-btn {
+            padding: 15px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 12px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .feature-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .feature-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .feature-desc {
+            color: #666;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚗 Traffic Detection System</h1>
+            <p>Lane Detection & Driver Gesture Detection</p>
+        </div>
+
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">🛣️</div>
+                <div class="feature-title">Lane Detection</div>
+                <div class="feature-desc">Phát hiện làn đường thời gian thực</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">👤</div>
+                <div class="feature-title">Gesture Detection</div>
+                <div class="feature-desc">Cảnh báo hành vi nguy hiểm</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <div class="feature-title">Combined Mode</div>
+                <div class="feature-desc">Kết hợp cả 2 tính năng</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📹</div>
+                <div class="upload-text">Kéo thả video vào đây hoặc click để chọn</div>
+                <div class="upload-subtext">Hỗ trợ: MP4, AVI, MOV, MKV (Max 100MB)</div>
+                <input type="file" id="fileInput" accept=".mp4,.avi,.mov,.mkv">
+            </div>
+
+            <div id="fileName" style="text-align: center; margin-top: 15px; color: #667eea; font-weight: 600;"></div>
+
+            <div class="detection-options">
+                <div class="option-title">Chọn chế độ phát hiện:</div>
+                <div class="option-buttons">
+                    <div class="option-btn" data-type="lane">
+                        <div class="icon">🛣️</div>
+                        <div class="title">Lane Detection</div>
+                        <div class="desc">Chỉ phát hiện làn đường</div>
+                    </div>
+                    <div class="option-btn selected" data-type="gesture">
+                        <div class="icon">👤</div>
+                        <div class="title">Gesture Detection</div>
+                        <div class="desc">Chỉ phát hiện cử chỉ</div>
+                    </div>
+                    <div class="option-btn" data-type="both">
+                        <div class="icon">⚡</div>
+                        <div class="title">Combined</div>
+                        <div class="desc">Cả 2 tính năng</div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="process-btn" id="processBtn" disabled>
+                📤 Tải lên và Xử lý Video
+            </button>
+
+            <div class="error-message" id="errorMsg"></div>
+            <div class="success-message" id="successMsg"></div>
+
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <div class="progress-text" id="progressText">Đang xử lý video...</div>
+            </div>
+
+            <div class="result-container" id="resultContainer">
+                <h2 style="margin-bottom: 20px;">📊 Kết quả:</h2>
+                <video class="result-video" id="resultVideo" controls></video>
+
+                <div class="result-stats" id="resultStats"></div>
+
+                <div class="action-buttons">
+                    <button class="action-btn" id="downloadBtn">
+                        📥 Tải xuống Video
+                    </button>
+                    <button class="action-btn" id="newVideoBtn">
+                        🔄 Xử lý Video Mới
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+        let selectedType = 'gesture';
+        let outputFilename = null;
+
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileName = document.getElementById('fileName');
+        const processBtn = document.getElementById('processBtn');
+        const optionBtns = document.querySelectorAll('.option-btn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressText = document.getElementById('progressText');
+        const resultContainer = document.getElementById('resultContainer');
+        const resultVideo = document.getElementById('resultVideo');
+        const resultStats = document.getElementById('resultStats');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const newVideoBtn = document.getElementById('newVideoBtn');
+        const errorMsg = document.getElementById('errorMsg');
+        const successMsg = document.getElementById('successMsg');
+
+        // Upload area click
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            handleFileSelect(file);
+        });
+
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            handleFileSelect(file);
+        });
+
+        // Option selection
+        optionBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                optionBtns.forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedType = btn.dataset.type;
+            });
+        });
+
+        // Process button
+        processBtn.addEventListener('click', processVideo);
+
+        // Download button
+        downloadBtn.addEventListener('click', () => {
+            if (outputFilename) {
+                window.location.href = `/download/${outputFilename}`;
+            }
+        });
+
+        // New video button
+        newVideoBtn.addEventListener('click', () => {
+            selectedFile = null;
+            outputFilename = null;
+            fileName.textContent = '';
+            processBtn.disabled = true;
+            resultContainer.style.display = 'none';
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+            fileInput.value = '';
+        });
+
+        function handleFileSelect(file) {
+            if (!file) return;
+
+            const validTypes = ['video/mp4', 'video/avi', 'video/quicktime', 'video/x-matroska'];
+            if (!validTypes.includes(file.type)) {
+                showError('Định dạng file không hợp lệ. Chỉ hỗ trợ MP4, AVI, MOV, MKV');
+                return;
+            }
+
+            if (file.size > 100 * 1024 * 1024) {
+                showError('File quá lớn. Kích thước tối đa 100MB');
+                return;
+            }
+
+            selectedFile = file;
+            fileName.textContent = `📁 ${file.name} (${(file.size / 1024 / 1024).toFixed(1)} MB)`;
+            processBtn.disabled = false;
+            errorMsg.style.display = 'none';
+        }
+
+        async function processVideo() {
+            if (!selectedFile) return;
+
+            processBtn.disabled = true;
+            progressContainer.style.display = 'block';
+            resultContainer.style.display = 'none';
+            errorMsg.style.display = 'none';
+
+            try {
+                // Upload file
+                progressText.textContent = 'Đang tải lên video...';
+                const formData = new FormData();
+                formData.append('video', selectedFile);
+                formData.append('detection_type', selectedType);
+
+                const uploadResponse = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!uploadResponse.ok) {
+                    throw new Error('Upload failed');
+                }
+
+                const uploadData = await uploadResponse.json();
+                const uploadedFilename = uploadData.filename;
+
+                // Process video
+                progressText.textContent = 'Đang xử lý video...';
+                const processUrl = `/process/${selectedType}/${uploadedFilename}`;
+
+                const processResponse = await fetch(processUrl);
+                if (!processResponse.ok) {
+                    throw new Error('Processing failed');
+                }
+
+                const result = await processResponse.json();
+
+                if (result.success) {
+                    outputFilename = result.output_file;
+                    displayResult(result);
+                    showSuccess('Xử lý video thành công!');
+                } else {
+                    throw new Error(result.error || 'Unknown error');
+                }
+
+            } catch (error) {
+                showError('Lỗi xử lý video: ' + error.message);
+                processBtn.disabled = false;
+            } finally {
+                progressContainer.style.display = 'none';
+            }
+        }
+
+        function displayResult(result) {
+            resultVideo.src = `/download/${result.output_file}`;
+
+            let statsHTML = '';
+            for (const [key, value] of Object.entries(result.stats)) {
+                const label = formatLabel(key);
+                statsHTML += `
+                    <div class="stat-item">
+                        <span class="stat-label">${label}</span>
+                        <span class="stat-value">${value}</span>
+                    </div>
+                `;
+            }
+
+            resultStats.innerHTML = statsHTML;
+            resultContainer.style.display = 'block';
+            processBtn.disabled = false;
+        }
+
+        function formatLabel(key) {
+            const labels = {
+                'frames_processed': 'Frames xử lý',
+                'frames_with_warnings': 'Frames có cảnh báo',
+                'warning_percentage': 'Tỷ lệ cảnh báo',
+                'processing_time': 'Thời gian xử lý',
+                'avg_fps': 'FPS trung bình',
+                'output_size': 'Kích thước file'
+            };
+            return labels[key] || key;
+        }
+
+        function showError(message) {
+            errorMsg.textContent = '❌ ' + message;
+            errorMsg.style.display = 'block';
+            successMsg.style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            successMsg.textContent = '✅ ' + message;
+            successMsg.style.display = 'block';
+            errorMsg.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

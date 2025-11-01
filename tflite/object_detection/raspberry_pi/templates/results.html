@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results - Traffic Detection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            transition: background 0.3s;
+        }
+
+        .back-link:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .result-type {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .type-lane {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .type-gesture {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .type-combined {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .result-filename {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            word-break: break-all;
+        }
+
+        .result-size {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+
+        .download-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .empty-state {
+            text-align: center;
+            background: white;
+            padding: 60px 20px;
+            border-radius: 15px;
+        }
+
+        .empty-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+        }
+
+        .empty-text {
+            color: #666;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← Quay lại Upload</a>
+
+        <div class="header">
+            <h1>📊 Kết Quả Xử Lý</h1>
+        </div>
+
+        {% if files %}
+        <div class="results-grid">
+            {% for file in files %}
+            <div class="result-card">
+                <div class="result-header">
+                    <span class="result-type type-{{ file.type }}">
+                        {% if file.type == 'lane' %}
+                            🛣️ Lane
+                        {% elif file.type == 'gesture' %}
+                            👤 Gesture
+                        {% elif file.type == 'combined' %}
+                            ⚡ Combined
+                        {% else %}
+                            📹 Video
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="result-filename">{{ file.filename }}</div>
+                <div class="result-size">{{ file.size }}</div>
+                <a href="/download/{{ file.filename }}" download>
+                    <button class="download-btn">📥 Download</button>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <div class="empty-text">Chưa có video nào được xử lý</div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
